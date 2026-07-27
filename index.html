@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./mobile-polish.css" />
     <style>
       .calendar-topbar {
         display: grid;
@@ -60,8 +61,8 @@
         }
 
         .brand-mark img {
-          width: min(58vw, 270px);
-          max-height: 92px;
+          width: min(76vw, 340px);
+          max-height: 118px;
         }
 
         .top-actions {
@@ -97,10 +98,11 @@
           <span id="todayWeekday">Today</span>
           <strong id="todayDate">--</strong>
         </div>
-        <div class="next-block">
-          <span>Next up</span>
+        <div class="next-block" id="nextEventCard">
+          <span id="nextEventKicker">Next event</span>
           <strong id="nextEventTitle">Loading calendar</strong>
           <small id="nextEventTime">One moment</small>
+          <a class="next-event-link" id="nextEventLink" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">View Details →</a>
         </div>
       </section>
 
