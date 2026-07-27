@@ -56,6 +56,32 @@ button { font: inherit; }
   backdrop-filter: blur(18px);
 }
 
+.brand-mark {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+}
+
+.brand-mark img {
+  display: block;
+  width: min(54vw, 360px);
+  max-height: 86px;
+  object-fit: contain;
+  object-position: left center;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
 .brand-kicker,
 .today-block span,
 .next-block span,
@@ -524,6 +550,7 @@ h1 {
 @media (min-width: 760px) {
   .calendar-shell { padding-inline: 28px; }
   .calendar-topbar { margin-inline: -28px; padding-inline: 28px; }
+  .brand-mark img { width: min(46vw, 420px); max-height: 108px; }
   h1 { max-width: none; }
   .now-strip { grid-template-columns: 220px 1fr; }
   .event-card summary { grid-template-columns: 132px 1fr; }
@@ -533,6 +560,7 @@ h1 {
 }
 
 @media (max-width: 420px) {
+  .brand-mark img { width: min(50vw, 230px); max-height: 70px; }
   .now-strip { grid-template-columns: 1fr; }
   .today-block {
     min-height: 82px;
