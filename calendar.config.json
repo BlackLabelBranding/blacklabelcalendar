@@ -1,0 +1,15 @@
+{
+  "calendarTitle": "Black Label Branding Calendar",
+  "calendarId": "c_86afa55c249c683bd6fbc03f71d1dd5c11c6789c683c6aef25e82892a7a0df78@group.calendar.google.com",
+  "calendarUrl": "https://calendar.google.com/calendar/u/0?cid=Y184NmFmYTU1YzI0OWM2ODNiZDZmYmMwM2Y3MWQxZGQ1YzExYzY3ODljNjgzYzZhZWYyNWU4Mjg5MmE3YTBkZjc4QGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20",
+  "googleApiKey": "AIzaSyAuXuSrlSV7eAcfPUSAgnwKgvCeODjPbbA",
+  "timezone": "America/Chicago",
+  "lookaheadDays": 120,
+  "showDemoEventsWhenUnconfigured": false,
+  "eventTypeRules": [
+    { "match": ["event", "show", "party", "festival"], "label": "Event", "tone": "event" },
+    { "match": ["meeting", "call", "consult"], "label": "Meeting", "tone": "meeting" },
+    { "match": ["deadline", "due", "launch"], "label": "Deadline", "tone": "deadline" },
+    { "match": ["travel", "trip"], "label": "Travel", "tone": "travel" }
+  ]
+}
