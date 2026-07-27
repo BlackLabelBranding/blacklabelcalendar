@@ -12,6 +12,70 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
+    <style>
+      .calendar-topbar {
+        display: grid;
+        grid-template-columns: 1fr;
+        place-items: center;
+        padding-top: max(30px, env(safe-area-inset-top));
+        padding-bottom: 18px;
+      }
+
+      .calendar-topbar::before {
+        content: "";
+        width: min(100%, 760px);
+        height: 2px;
+        margin-bottom: 20px;
+        border-radius: 999px;
+        background: linear-gradient(90deg, transparent, rgba(245, 197, 66, 0.35), #f5c542, rgba(245, 197, 66, 0.35), transparent);
+        box-shadow: 0 0 28px rgba(245, 197, 66, 0.22);
+      }
+
+      .brand-mark {
+        justify-content: center;
+        width: 100%;
+      }
+
+      .brand-mark img {
+        width: min(62vw, 420px);
+        max-height: 128px;
+        object-position: center;
+        filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.45));
+      }
+
+      .top-actions {
+        position: absolute;
+        top: max(22px, env(safe-area-inset-top));
+        right: 14px;
+      }
+
+      @media (max-width: 620px) {
+        .calendar-topbar {
+          padding-top: max(24px, env(safe-area-inset-top));
+        }
+
+        .calendar-topbar::before {
+          width: min(100%, 520px);
+          margin-bottom: 16px;
+        }
+
+        .brand-mark img {
+          width: min(58vw, 270px);
+          max-height: 92px;
+        }
+
+        .top-actions {
+          top: max(18px, env(safe-area-inset-top));
+          right: 12px;
+        }
+
+        .icon-button,
+        .calendar-link {
+          min-width: 46px;
+          height: 46px;
+        }
+      }
+    </style>
   </head>
   <body>
     <main class="calendar-shell" aria-live="polite">
