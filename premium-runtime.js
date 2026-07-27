@@ -21,9 +21,14 @@
   if (!els.card || !els.title || !els.time || !els.countdown) return;
 
   let targetTime = null;
-  let sourceTimeText = "";
+  let displayedTime = "";
   let syncQueued = false;
   let syncing = false;
+
+  function setText(element, value) {
+    const text = String(value);
+    if (element.textContent !== text) element.textContent = text;
+  }
 
   function classify(title) {
     const value = title.toLowerCase();
@@ -67,10 +72,10 @@
   }
 
   function setCount(primary, primaryLabel, secondary, secondaryLabel) {
-    els.primary.textContent = String(primary).padStart(2, "0");
-    els.primaryLabel.textContent = primaryLabel;
-    els.secondary.textContent = String(secondary).padStart(2, "0");
-    els.secondaryLabel.textContent = secondaryLabel;
+    setText(els.primary, String(primary).padStart(2, "0"));
+    setText(els.primaryLabel, primaryLabel);
+    setText(els.secondary, String(secondary).padStart(2, "0"));
+    setText(els.secondaryLabel, secondaryLabel);
     els.secondaryUnit.hidden = false;
   }
 
@@ -98,12 +103,38 @@
     return match[1].replace(/[),.;]+$/, "");
   }
 
+  function applyHeroTime(rawTime) {
+    const parsed = parseHeroTime(rawTime);
+    if (!parsed) {
+      targetTime = null;
+      displayedTime = "";
+      els.countdown.hidden = true;
+      return;
+    }
+
+    displayedTime = parsed.dateText;
+    setText(els.time, displayedTime);
+
+    if (parsed.live) {
+      targetTime = null;
+      els.countdown.hidden = false;
+      setText(els.primary, "LIVE");
+      setText(els.primaryLabel, "Now");
+      els.secondaryUnit.hidden = true;
+      return;
+    }
+
+    targetTime = parsed.target;
+    els.countdown.hidden = !targetTime;
+    if (targetTime) updateCountdown();
+  }
+
   function syncHero() {
     if (syncing) return;
     syncing = true;
 
     const title = cleanTitle(els.title.textContent);
-    if (title && els.title.textContent !== title) els.title.textContent = title;
+    if (title) setText(els.title, title);
 
     const tone = classify(title);
     els.card.dataset.tone = tone;
@@ -111,25 +142,8 @@
     if (image) els.card.style.setProperty("--hero-image", `url(${JSON.stringify(image)})`);
 
     const currentTime = els.time.textContent.trim();
-    if (/Starts in|open now|in progress/i.test(currentTime)) sourceTimeText = currentTime;
-    const parsed = parseHeroTime(sourceTimeText || currentTime);
-
-    if (!parsed) {
-      targetTime = null;
-      els.countdown.hidden = true;
-    } else if (parsed.live) {
-      targetTime = null;
-      els.time.textContent = parsed.dateText;
-      els.countdown.hidden = false;
-      els.primary.textContent = "LIVE";
-      els.primaryLabel.textContent = "Now";
-      els.secondaryUnit.hidden = true;
-    } else {
-      els.time.textContent = parsed.dateText;
-      targetTime = parsed.target;
-      els.countdown.hidden = !targetTime;
-      if (targetTime) updateCountdown();
-    }
+    if (currentTime && currentTime !== displayedTime) applyHeroTime(currentTime);
+    else updateCountdown();
 
     syncing = false;
   }
