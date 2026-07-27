@@ -5,12 +5,33 @@ const state = {
   visibleMonth: startOfMonth(new Date()),
 };
 
+const DEFAULT_TYPE_RULES = [
+  { label: "Rally", tone: "rally", icon: "🏍", match: ["rally", "sturgis", "festival", "fest"] },
+  { label: "Band", tone: "entertainment", icon: "🎵", match: ["band", "concert", "music", "show", "dj", "entertainment"] },
+  { label: "Meeting", tone: "meeting", icon: "🤝", match: ["meeting", "call", "review", "sync", "appointment"] },
+  { label: "Travel", tone: "travel", icon: "✈️", match: ["travel", "flight", "hotel", "drive", "trip", "load in", "load-in"] },
+  { label: "Deadline", tone: "deadline", icon: "🔴", match: ["deadline", "due", "launch", "final", "deliver"] },
+];
+
+const TYPE_FALLBACKS = {
+  rally: { label: "Rally", tone: "rally", icon: "🏍" },
+  entertainment: { label: "Band", tone: "entertainment", icon: "🎵" },
+  event: { label: "Event", tone: "event", icon: "📅" },
+  meeting: { label: "Meeting", tone: "meeting", icon: "🤝" },
+  travel: { label: "Travel", tone: "travel", icon: "✈️" },
+  deadline: { label: "Deadline", tone: "deadline", icon: "🔴" },
+  default: { label: "Event", tone: "event", icon: "📅" },
+};
+
 const els = {
   title: document.getElementById("calendarTitle"),
   todayWeekday: document.getElementById("todayWeekday"),
   todayDate: document.getElementById("todayDate"),
+  nextEventCard: document.getElementById("nextEventCard"),
+  nextEventKicker: document.getElementById("nextEventKicker"),
   nextEventTitle: document.getElementById("nextEventTitle"),
   nextEventTime: document.getElementById("nextEventTime"),
+  nextEventLink: document.getElementById("nextEventLink"),
   status: document.getElementById("statusBanner"),
   agenda: document.getElementById("agendaView"),
   today: document.getElementById("todayView"),
@@ -118,6 +139,7 @@ function normalizeGoogleEvent(item, config) {
     allDay,
     label: type.label,
     tone: type.tone,
+    icon: type.icon,
   };
 }
 
@@ -127,10 +149,19 @@ function parseGoogleDate(value, allDay) {
 
 function classifyEvent(title, rules) {
   const haystack = title.toLowerCase();
-  const match = rules.find((rule) =>
+  const normalizedRules = [...rules, ...DEFAULT_TYPE_RULES];
+  const match = normalizedRules.find((rule) =>
     (rule.match || []).some((term) => haystack.includes(String(term).toLowerCase()))
   );
-  return match || { label: "Calendar", tone: "default" };
+
+  if (!match) return TYPE_FALLBACKS.default;
+  const tone = match.tone || "event";
+  const fallback = TYPE_FALLBACKS[tone] || TYPE_FALLBACKS.default;
+  return {
+    label: match.label || fallback.label,
+    tone,
+    icon: match.icon || fallback.icon,
+  };
 }
 
 function renderAll() {
@@ -145,13 +176,57 @@ function renderAll() {
 
 function renderNextEvent(event) {
   if (!event) {
+    els.nextEventCard.dataset.urgency = "empty";
+    els.nextEventKicker.textContent = "Next event";
     els.nextEventTitle.textContent = "No upcoming events";
     els.nextEventTime.textContent = state.config?.timezone || "America/Chicago";
+    els.nextEventLink.href = state.config?.calendarUrl || "https://calendar.google.com/";
     return;
   }
 
-  els.nextEventTitle.textContent = event.title;
-  els.nextEventTime.textContent = event.allDay ? formatDate(event.start) : `${formatDate(event.start)} at ${formatTime(event.start)}`;
+  const now = new Date();
+  const msUntilStart = event.start.getTime() - now.getTime();
+  const within24Hours = msUntilStart > 0 && msUntilStart <= 24 * 60 * 60 * 1000;
+  const happeningNow = event.start <= now && event.end >= now;
+
+  els.nextEventCard.dataset.urgency = within24Hours || happeningNow ? "soon" : "normal";
+  els.nextEventKicker.textContent = happeningNow ? "🔥 Now happening" : within24Hours ? "🔥 Happening next" : nextEventKicker(event.start);
+  els.nextEventTitle.textContent = `${event.icon || "📅"} ${event.title}`;
+  els.nextEventTime.textContent = heroTimeLine(event, now);
+  els.nextEventLink.href = event.htmlLink || state.config?.calendarUrl || "https://calendar.google.com/";
+}
+
+function heroTimeLine(event, now) {
+  if (event.start <= now && event.end >= now) return "Open now - event is in progress";
+  const countdown = countdownText(event.start, now);
+  const date = event.allDay ? formatDate(event.start) : `${formatDate(event.start)} at ${formatTime(event.start)}`;
+  return countdown ? `${date} - Starts in ${countdown}` : date;
+}
+
+function nextEventKicker(date) {
+  const today = startOfDay(new Date());
+  const eventDay = startOfDay(date);
+  const diffDays = Math.round((eventDay - today) / 86400000);
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays <= 7) return "This week";
+  if (diffDays <= 31) return "Coming up";
+  return "Next event";
+}
+
+function countdownText(date, now = new Date()) {
+  const diff = Math.max(date.getTime() - now.getTime(), 0);
+  if (!diff) return "";
+  const days = Math.floor(diff / 86400000);
+  const hours = Math.floor((diff % 86400000) / 3600000);
+  const minutes = Math.floor((diff % 3600000) / 60000);
+  if (days > 0) return `${days} ${plural(days, "DAY")} ${hours} ${plural(hours, "HOUR")}`;
+  if (hours > 0) return `${hours} ${plural(hours, "HOUR")} ${minutes} ${plural(minutes, "MINUTE")}`;
+  return `${Math.max(minutes, 1)} ${plural(Math.max(minutes, 1), "MINUTE")}`;
+}
+
+function plural(value, label) {
+  return value === 1 ? label : `${label}S`;
 }
 
 function renderAgenda(container, events, emptyText) {
@@ -175,21 +250,25 @@ function renderEventCard(event) {
   card.className = "event-card";
   card.dataset.tone = event.tone || "default";
 
+  const calendarHref = event.htmlLink || state.config?.calendarUrl || "";
+  const mapsHref = event.location ? mapsSearchUrl(event.location) : "";
+  const directionsHref = event.location ? directionsUrl(event.location) : "";
   const details = [
-    event.description,
-    event.htmlLink ? `<a href="${escapeAttr(event.htmlLink)}" target="_blank" rel="noopener noreferrer">Open in Google Calendar</a>` : "",
-  ].filter(Boolean).join("<br><br>");
+    event.description ? `<div class="event-description">${escapeHtml(event.description)}</div>` : "",
+    buildEventActions({ calendarHref, mapsHref, directionsHref }),
+  ].filter(Boolean).join("");
+  const clock = formatClockParts(event.start);
 
   card.innerHTML = `
     <summary>
       <div class="event-time">
-        <strong>${escapeHtml(event.allDay ? "All" : formatTime(event.start))}</strong>
-        <span>${escapeHtml(event.allDay ? "Day" : timePeriod(event.start))}</span>
+        <strong>${escapeHtml(event.allDay ? "All" : clock.time)}</strong>
+        <span>${escapeHtml(event.allDay ? "Day" : clock.period)}</span>
       </div>
       <div class="event-main">
         <div class="event-title-row">
           <h2 class="event-title">${escapeHtml(event.title)}</h2>
-          <span class="event-chip">${escapeHtml(event.label)}</span>
+          <span class="event-chip">${escapeHtml(event.icon || "📅")} ${escapeHtml(event.label)}</span>
         </div>
         <div class="event-meta">${escapeHtml(event.allDay ? formatDate(event.start) : `${formatDate(event.start)} - ${formatRange(event)}`)}</div>
         ${event.location ? `<div class="event-location">${escapeHtml(event.location)}</div>` : ""}
@@ -199,6 +278,24 @@ function renderEventCard(event) {
   `;
 
   return card;
+}
+
+function buildEventActions({ calendarHref, mapsHref, directionsHref }) {
+  const actions = [
+    mapsHref ? `<a href="${escapeAttr(mapsHref)}" target="_blank" rel="noopener noreferrer">Google Maps</a>` : "",
+    directionsHref ? `<a href="${escapeAttr(directionsHref)}" target="_blank" rel="noopener noreferrer">Directions</a>` : "",
+    calendarHref ? `<a href="${escapeAttr(calendarHref)}" target="_blank" rel="noopener noreferrer">Open in Google Calendar</a>` : "",
+  ].filter(Boolean);
+
+  return actions.length ? `<div class="event-actions">${actions.join("")}</div>` : "";
+}
+
+function mapsSearchUrl(location) {
+  return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(location)}`;
+}
+
+function directionsUrl(location) {
+  return `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(location)}`;
 }
 
 function renderWeek(events) {
@@ -226,7 +323,7 @@ function renderWeekDay(day, events) {
 function renderWeekEvent(event) {
   return `
     <a class="week-event" data-tone="${escapeAttr(event.tone)}" href="${escapeAttr(event.htmlLink || state.config?.calendarUrl || "#")}" target="_blank" rel="noopener noreferrer">
-      <strong>${escapeHtml(event.title)}</strong>
+      <strong>${escapeHtml(event.icon || "📅")} ${escapeHtml(event.title)}</strong>
       <span>${escapeHtml(event.allDay ? "All day" : formatTime(event.start))}</span>
     </a>
   `;
@@ -261,19 +358,35 @@ function renderMonth() {
 function renderMonthCell(day, visibleMonth) {
   const items = eventsForDay(state.events, day);
   const visibleItems = items.slice(0, 2);
-  const extraCount = Math.max(items.length - visibleItems.length, 0);
+  const hiddenItems = items.slice(2);
   const classes = ["month-cell"];
   if (day.getMonth() !== visibleMonth.getMonth()) classes.push("is-muted");
   if (dateKey(day) === dateKey(new Date())) classes.push("is-today");
 
-  return `
-    <div class="${classes.join(" ")}">
-      <span class="month-date">${day.getDate()}</span>
-      <div class="month-events">
-        ${visibleItems.map(renderMonthEvent).join("")}
-        ${extraCount ? `<span class="month-more">+${extraCount} more</span>` : ""}
+  if (!hiddenItems.length) {
+    return `
+      <div class="${classes.join(" ")}">
+        <span class="month-date">${day.getDate()}</span>
+        <div class="month-events">
+          ${visibleItems.map(renderMonthEvent).join("")}
+        </div>
       </div>
-    </div>
+    `;
+  }
+
+  return `
+    <details class="${classes.join(" ")}">
+      <summary>
+        <span class="month-date">${day.getDate()}</span>
+        <div class="month-events">
+          ${visibleItems.map(renderMonthEvent).join("")}
+          <span class="month-more">+${hiddenItems.length} more</span>
+        </div>
+      </summary>
+      <div class="month-extra-events">
+        ${hiddenItems.map(renderMonthEvent).join("")}
+      </div>
+    </details>
   `;
 }
 
@@ -281,7 +394,7 @@ function renderMonthEvent(event) {
   return `
     <a class="month-event" data-tone="${escapeAttr(event.tone)}" href="${escapeAttr(event.htmlLink || state.config?.calendarUrl || "#")}" target="_blank" rel="noopener noreferrer" title="${escapeAttr(event.title)}">
       <span>${escapeHtml(event.allDay ? "All" : formatTime(event.start))}</span>
-      <strong>${escapeHtml(event.title)}</strong>
+      <strong>${escapeHtml(event.icon || "📅")} ${escapeHtml(event.title)}</strong>
     </a>
   `;
 }
@@ -358,11 +471,18 @@ function formatDayLabel(date) {
 }
 
 function formatTime(date) {
-  return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" }).replace(" ", "");
+  return date.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" });
+}
+
+function formatClockParts(date) {
+  const value = formatTime(date);
+  const match = value.match(/^(.+?)\s?(AM|PM)$/i);
+  if (!match) return { time: value, period: "" };
+  return { time: match[1], period: match[2].toUpperCase() };
 }
 
 function timePeriod(date) {
-  return date.toLocaleTimeString(undefined, { hour: "numeric" }).includes("AM") ? "AM" : "PM";
+  return formatClockParts(date).period;
 }
 
 function formatRange(event) {
@@ -406,28 +526,31 @@ function demoEvents() {
       allDay: false,
       label: "Meeting",
       tone: "meeting",
+      icon: "🤝",
     },
     {
       id: "demo-2",
-      title: "Client Event Hold",
+      title: "Josh Holland Band",
       location: "Effingham, IL",
-      description: "Example public event card with large mobile-readable type.",
+      description: "Example entertainment event with maps and calendar actions.",
       start: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 18, 30),
       end: new Date(tomorrow.getFullYear(), tomorrow.getMonth(), tomorrow.getDate(), 22, 0),
       allDay: false,
-      label: "Event",
-      tone: "event",
+      label: "Band",
+      tone: "entertainment",
+      icon: "🎵",
     },
     {
       id: "demo-3",
-      title: "Launch Deadline",
-      location: "",
-      description: "Deadline-style event category example.",
+      title: "Sturgis Motorcycle Rally",
+      location: "Sturgis, SD",
+      description: "Rally-style event category example.",
       start: weekend,
       end: weekend,
       allDay: true,
-      label: "Deadline",
-      tone: "deadline",
+      label: "Rally",
+      tone: "rally",
+      icon: "🏍",
     },
   ];
 }
