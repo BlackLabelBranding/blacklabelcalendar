@@ -1,0 +1,145 @@
+/* Final mobile composition pass: full-width brand banner and stable event times. */
+
+.calendar-topbar {
+  isolation: isolate;
+}
+
+.calendar-topbar::before {
+  position: relative;
+  z-index: 2;
+}
+
+.brand-mark {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 860px);
+  height: clamp(118px, 18vw, 176px);
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 2px;
+  clip-path: inset(0);
+}
+
+.brand-mark::before {
+  content: "";
+  position: absolute;
+  inset: 18% 8%;
+  z-index: -1;
+  border-radius: 999px;
+  background: radial-gradient(ellipse at center, rgba(245, 197, 66, 0.12), transparent 68%);
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+.brand-mark img {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  object-fit: cover;
+  object-position: center center;
+  transform: translate(-50%, -50%) scale(1.55);
+  transform-origin: center;
+  filter: drop-shadow(0 14px 24px rgba(0, 0, 0, 0.52)) drop-shadow(0 0 18px rgba(245, 197, 66, 0.08));
+  pointer-events: none;
+  user-select: none;
+}
+
+@media (max-width: 620px) {
+  .calendar-topbar {
+    padding-bottom: 8px;
+  }
+
+  .calendar-topbar::before {
+    width: calc(100% + 28px);
+    margin-inline: -14px;
+    margin-bottom: 0;
+  }
+
+  .brand-mark {
+    width: calc(100% + 28px);
+    height: clamp(112px, 31vw, 140px);
+    margin-inline: -14px;
+  }
+
+  .brand-mark img {
+    object-position: center 51%;
+    transform: translate(-50%, -50%) scale(1.9);
+  }
+
+  .event-card summary {
+    grid-template-columns: 72px minmax(0, 1fr);
+    gap: 14px;
+  }
+
+  .event-time {
+    min-width: 0;
+    padding-right: 9px;
+    justify-items: start;
+  }
+
+  .event-time strong {
+    max-width: 100%;
+    font-size: 19px;
+    line-height: 1;
+    letter-spacing: -0.045em;
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+  }
+
+  .event-time span {
+    margin-top: 7px;
+  }
+
+  .event-details {
+    padding-left: 98px;
+  }
+}
+
+@media (max-width: 420px) {
+  .brand-mark {
+    height: clamp(108px, 30vw, 126px);
+  }
+
+  .brand-mark img {
+    transform: translate(-50%, -50%) scale(2.02);
+  }
+
+  .event-card summary {
+    grid-template-columns: 70px minmax(0, 1fr);
+    gap: 13px;
+  }
+
+  .event-time {
+    padding-right: 8px;
+  }
+
+  .event-time strong {
+    font-size: 18px;
+  }
+
+  .event-details {
+    padding-left: 95px;
+  }
+}
+
+@media (max-width: 360px) {
+  .event-card summary {
+    grid-template-columns: 68px minmax(0, 1fr);
+    gap: 12px;
+  }
+
+  .event-time strong {
+    font-size: 17px;
+  }
+
+  .event-details {
+    padding-left: 92px;
+  }
+}
