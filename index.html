@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#05070a" />
     <meta name="robots" content="noindex, nofollow" />
-    <title>Black Label Branding Calendar</title>
+    <title>Black Label Entertainment Calendar</title>
     <link rel="icon" type="image/png" href="https://xopcttkrmjvwdddawdaa.supabase.co/storage/v1/object/public/Logos/blb%20favicon%20(3).png" />
     <link rel="apple-touch-icon" href="https://xopcttkrmjvwdddawdaa.supabase.co/storage/v1/object/public/Logos/blb%20favicon%20(3).png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -13,70 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;900&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="./styles.css" />
     <link rel="stylesheet" href="./mobile-polish.css" />
-    <style>
-      .calendar-topbar {
-        display: grid;
-        grid-template-columns: 1fr;
-        place-items: center;
-        padding-top: max(30px, env(safe-area-inset-top));
-        padding-bottom: 18px;
-      }
-
-      .calendar-topbar::before {
-        content: "";
-        width: min(100%, 760px);
-        height: 2px;
-        margin-bottom: 20px;
-        border-radius: 999px;
-        background: linear-gradient(90deg, transparent, rgba(245, 197, 66, 0.35), #f5c542, rgba(245, 197, 66, 0.35), transparent);
-        box-shadow: 0 0 28px rgba(245, 197, 66, 0.22);
-      }
-
-      .brand-mark {
-        justify-content: center;
-        width: 100%;
-      }
-
-      .brand-mark img {
-        width: min(62vw, 420px);
-        max-height: 128px;
-        object-position: center;
-        filter: drop-shadow(0 16px 26px rgba(0, 0, 0, 0.45));
-      }
-
-      .top-actions {
-        position: absolute;
-        top: max(22px, env(safe-area-inset-top));
-        right: 14px;
-      }
-
-      @media (max-width: 620px) {
-        .calendar-topbar {
-          padding-top: max(24px, env(safe-area-inset-top));
-        }
-
-        .calendar-topbar::before {
-          width: min(100%, 520px);
-          margin-bottom: 16px;
-        }
-
-        .brand-mark img {
-          width: min(76vw, 340px);
-          max-height: 118px;
-        }
-
-        .top-actions {
-          top: max(18px, env(safe-area-inset-top));
-          right: 12px;
-        }
-
-        .icon-button,
-        .calendar-link {
-          min-width: 46px;
-          height: 46px;
-        }
-      }
-    </style>
+    <link rel="stylesheet" href="./mobile-finish.css" />
   </head>
   <body>
     <main class="calendar-shell" aria-live="polite">
@@ -93,17 +30,34 @@
         </div>
       </header>
 
-      <section class="now-strip" aria-label="Current date and next event">
-        <div class="today-block">
-          <span id="todayWeekday">Today</span>
-          <strong id="todayDate">--</strong>
-        </div>
-        <div class="next-block" id="nextEventCard">
-          <span id="nextEventKicker">Next event</span>
-          <strong id="nextEventTitle">Loading calendar</strong>
-          <small id="nextEventTime">One moment</small>
-          <a class="next-event-link" id="nextEventLink" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">View Details →</a>
-        </div>
+      <span id="todayWeekday" hidden></span>
+      <span id="todayDate" hidden></span>
+
+      <section class="now-strip" aria-label="Next event">
+        <article class="next-block" id="nextEventCard" data-tone="event" data-urgency="normal">
+          <div class="next-event-copy">
+            <span class="next-event-kicker" id="nextEventKicker">Happening next</span>
+            <strong class="next-event-title" id="nextEventTitle">Loading calendar</strong>
+
+            <div class="hero-countdown" id="heroCountdown" aria-label="Time until event">
+              <div class="countdown-unit">
+                <strong id="heroCountPrimary">--</strong>
+                <span id="heroCountPrimaryLabel">Days</span>
+              </div>
+              <div class="countdown-unit" id="heroCountSecondaryUnit">
+                <strong id="heroCountSecondary">--</strong>
+                <span id="heroCountSecondaryLabel">Hours</span>
+              </div>
+            </div>
+
+            <div class="hero-footer">
+              <small id="nextEventTime">One moment</small>
+              <a class="next-event-link" id="nextEventLink" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">
+                View Details <span aria-hidden="true">→</span>
+              </a>
+            </div>
+          </div>
+        </article>
       </section>
 
       <section class="status-banner" id="statusBanner" hidden></section>
@@ -115,12 +69,25 @@
     </main>
 
     <nav class="view-tabs" aria-label="Calendar view">
-      <button class="active" type="button" data-view="agenda">Upcoming</button>
-      <button type="button" data-view="today">Day</button>
-      <button type="button" data-view="week">Week</button>
-      <button type="button" data-view="month">Month</button>
+      <button class="active" type="button" data-view="agenda" aria-label="Upcoming events">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3v3M17 3v3M4 9h16M5 5h14a1 1 0 0 1 1 1v14H4V6a1 1 0 0 1 1-1Z"/><path d="M8 13h3v3H8z"/></svg>
+        <span>Upcoming</span>
+      </button>
+      <button type="button" data-view="today" aria-label="Day view">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4zM4 9h16M8 3v4M16 3v4"/><path d="M8 13h3M13 13h3M8 17h3M13 17h3"/></svg>
+        <span>Day</span>
+      </button>
+      <button type="button" data-view="week" aria-label="Week view">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 6h13M7 12h13M7 18h13"/><circle cx="4" cy="6" r="1"/><circle cx="4" cy="12" r="1"/><circle cx="4" cy="18" r="1"/></svg>
+        <span>Week</span>
+      </button>
+      <button type="button" data-view="month" aria-label="Month view">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v15H4zM4 9h16M8 3v4M16 3v4"/></svg>
+        <span>Month</span>
+      </button>
     </nav>
 
     <script type="module" src="./calendar.js"></script>
+    <script src="./premium-runtime.js" defer></script>
   </body>
 </html>
