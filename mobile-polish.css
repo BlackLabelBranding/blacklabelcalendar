@@ -147,6 +147,28 @@
   position: relative;
 }
 
+.month-cell summary {
+  min-height: 100%;
+  cursor: pointer;
+  list-style: none;
+}
+
+.month-cell summary::-webkit-details-marker {
+  display: none;
+}
+
+.month-cell[open] {
+  z-index: 2;
+  background: #121821;
+  box-shadow: 0 18px 34px rgba(0, 0, 0, 0.35);
+}
+
+.month-extra-events {
+  display: grid;
+  gap: 4px;
+  margin-top: 4px;
+}
+
 .month-more {
   display: inline-flex;
   width: fit-content;
