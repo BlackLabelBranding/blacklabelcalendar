@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <base href="/calendar/" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#05070a" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Black Label Branding Calendar</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;650;750;850;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="calendar-shell" aria-live="polite">
+      <header class="calendar-topbar">
+        <div>
+          <p class="brand-kicker">Black Label Branding</p>
+          <h1 id="calendarTitle">Calendar</h1>
+        </div>
+        <div class="top-actions">
+          <a class="calendar-link" id="googleCalendarLink" href="https://calendar.google.com/" target="_blank" rel="noopener noreferrer">Open</a>
+          <button class="icon-button" id="refreshButton" type="button" aria-label="Refresh calendar">
+            <span aria-hidden="true">↻</span>
+          </button>
+        </div>
+      </header>
+
+      <section class="now-strip" aria-label="Current date and next event">
+        <div class="today-block">
+          <span id="todayWeekday">Today</span>
+          <strong id="todayDate">--</strong>
+        </div>
+        <div class="next-block">
+          <span>Next up</span>
+          <strong id="nextEventTitle">Loading calendar</strong>
+          <small id="nextEventTime">One moment</small>
+        </div>
+      </section>
+
+      <section class="status-banner" id="statusBanner" hidden></section>
+
+      <section id="agendaView" class="agenda-view"></section>
+      <section id="todayView" class="agenda-view" hidden></section>
+      <section id="weekView" class="week-view" hidden></section>
+      <section id="monthView" class="month-view" hidden></section>
+    </main>
+
+    <nav class="view-tabs" aria-label="Calendar view">
+      <button class="active" type="button" data-view="agenda">Upcoming</button>
+      <button type="button" data-view="today">Day</button>
+      <button type="button" data-view="week">Week</button>
+      <button type="button" data-view="month">Month</button>
+    </nav>
+
+    <script type="module" src="./calendar.js"></script>
+  </body>
+</html>
